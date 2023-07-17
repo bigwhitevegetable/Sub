@@ -1,0 +1,344 @@
+port: 7890
+socks-port: 7891
+allow-lan: true
+mode: Rule
+log-level: info
+external-controller: 0.0.0.0:9090
+proxies:
+- alterId: 1
+  cipher: auto
+  name: 日本 001
+  network: tcp
+  port: 28786
+  server: jp06-vm0.entry.jpojpoh.art
+  skip-cert-verify: true
+  tls: true
+  type: vmess
+  uuid: 893ab3c0-291c-3b9e-b44a-eed40956b6fc
+- alterId: 64
+  cipher: auto
+  name: 美国 001
+  network: tcp
+  port: 55016
+  server: 45.199.138.165
+  skip-cert-verify: true
+  tls: false
+  type: vmess
+  uuid: 418048af-a293-4b99-9b0c-98ca3580dd24
+- alterId: 64
+  cipher: auto
+  name: 美国 002
+  network: tcp
+  port: 41866
+  server: 192.74.236.29
+  skip-cert-verify: true
+  type: vmess
+  uuid: 418048af-a293-4b99-9b0c-98ca3580dd24
+- alterId: 64
+  cipher: auto
+  name: 美国 003
+  network: tcp
+  port: 47778
+  server: 45.199.138.124
+  skip-cert-verify: true
+  type: vmess
+  uuid: 37c29f42-b7c7-40c7-9da9-743dcc4895bc
+- alterId: 64
+  cipher: auto
+  name: 美国 004
+  network: tcp
+  port: 53602
+  server: 140.99.142.78
+  skip-cert-verify: true
+  type: vmess
+  uuid: 418048af-a293-4b99-9b0c-98ca3580dd24
+- alterId: 64
+  cipher: auto
+  name: 美国 005
+  network: tcp
+  port: 49982
+  server: 140.99.49.6
+  skip-cert-verify: true
+  type: vmess
+  uuid: 418048af-a293-4b99-9b0c-98ca3580dd24
+- alterId: 64
+  cipher: auto
+  name: 美国 006
+  network: tcp
+  port: 49232
+  server: 45.199.138.151
+  skip-cert-verify: true
+  type: vmess
+  uuid: 418048af-a293-4b99-9b0c-98ca4690dd24
+- alterId: 64
+  cipher: auto
+  name: 美国 007
+  network: tcp
+  port: 54434
+  server: 142.4.98.19
+  skip-cert-verify: true
+  type: vmess
+  uuid: 418048af-a293-4b99-9b0c-98ca3580dd24
+- alterId: 64
+  cipher: auto
+  name: 美国 008
+  network: tcp
+  port: 42857
+  server: 192.74.228.173
+  skip-cert-verify: true
+  type: vmess
+  uuid: 051b844f-efe3-4847-92aa-66b5de0b6d4e
+- alterId: 64
+  cipher: auto
+  name: 荷兰 001
+  network: none
+  port: 40424
+  server: 154.85.1.2
+  skip-cert-verify: true
+  tls: false
+  type: vmess
+  uuid: 418048af-a293-4b99-9b0c-98ca3580dd24
+- alterId: 64
+  cipher: auto
+  name: 荷兰 002
+  network: tcp
+  port: 43393
+  server: 156.245.8.248
+  skip-cert-verify: true
+  type: vmess
+  uuid: 964bf499-9ec0-4378-92b6-87d8d861b2d0
+proxy-groups:
+- name: PROXY
+  type: select
+  proxies:
+  - LOAD-BALANCE
+  - FALLBACK
+  - URL-TEST
+  - SELECT
+- name: DEBUG
+  type: select
+  proxies:
+  - LOAD-BALANCE
+  - FALLBACK
+  - URL-TEST
+  - SELECT
+- name: SELECT
+  type: select
+  url: http://www.v2ex.com/generate_204
+  interval: 300
+  proxies: &id001
+  - 日本 001
+  - 美国 001
+  - 美国 002
+  - 美国 003
+  - 美国 004
+  - 美国 005
+  - 美国 006
+  - 美国 007
+  - 美国 008
+  - 荷兰 001
+  - 荷兰 002
+- name: URL-TEST
+  type: url-test
+  url: http://www.v2ex.com/generate_204
+  interval: 300
+  proxies: *id001
+- name: FALLBACK
+  type: fallback
+  url: http://www.v2ex.com/generate_204
+  interval: 300
+  proxies: *id001
+- name: LOAD-BALANCE
+  type: load-balance
+  url: http://www.v2ex.com/generate_204
+  interval: 300
+  strategy: round-robin
+  proxies: *id001
+rules:
+  - RULE-SET,applications,DIRECT
+  - RULE-SET,direct-classical,DIRECT
+  - RULE-SET,proxy-classical,PROXY
+  - RULE-SET,reject-classical,REJECT
+  - RULE-SET,private,DIRECT
+  - RULE-SET,reject,REJECT
+  - RULE-SET,advertising,REJECT
+  - RULE-SET,icloud,DIRECT
+  - RULE-SET,apple,DIRECT
+  - RULE-SET,google,DIRECT
+  - RULE-SET,proxy,PROXY
+  - RULE-SET,direct,DIRECT
+  - RULE-SET,lancidr,DIRECT
+  - RULE-SET,cncidr,DIRECT
+  - RULE-SET,telegramcidr,PROXY
+  - GEOIP,LAN,DIRECT
+  - GEOIP,CN,DIRECT
+  - MATCH,PROXY
+
+rule-providers:
+  reject:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/reject.txt"
+    path: ./ruleset/reject.yaml
+    interval: 86400
+
+  icloud:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/icloud.txt"
+    path: ./ruleset/icloud.yaml
+    interval: 86400
+
+  apple:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/apple.txt"
+    path: ./ruleset/apple.yaml
+    interval: 86400
+
+  google:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/google.txt"
+    path: ./ruleset/google.yaml
+    interval: 86400
+
+  proxy:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/proxy.txt"
+    path: ./ruleset/proxy.yaml
+    interval: 86400
+
+  direct:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt"
+    path: ./ruleset/direct.yaml
+    interval: 86400
+
+  private:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/private.txt"
+    path: ./ruleset/private.yaml
+    interval: 86400
+
+  gfw:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/gfw.txt"
+    path: ./ruleset/gfw.yaml
+    interval: 86400
+
+  greatfire:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/greatfire.txt"
+    path: ./ruleset/greatfire.yaml
+    interval: 86400
+
+  tld-not-cn:
+    type: http
+    behavior: domain
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/tld-not-cn.txt"
+    path: ./ruleset/tld-not-cn.yaml
+    interval: 86400
+
+  telegramcidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/telegramcidr.txt"
+    path: ./ruleset/telegramcidr.yaml
+    interval: 86400
+
+  cncidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt"
+    path: ./ruleset/cncidr.yaml
+    interval: 86400
+
+  lancidr:
+    type: http
+    behavior: ipcidr
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/lancidr.txt"
+    path: ./ruleset/lancidr.yaml
+    interval: 86400
+
+  applications:
+    type: http
+    behavior: classical
+    url: "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/applications.txt"
+    path: ./ruleset/applications.yaml
+    interval: 86400
+    
+  advertising:
+    type: http
+    behavior: classical
+    url: "https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Advertising/Advertising_Classical.yaml"
+    path: ./ruleset/Advertising_Classical.yaml
+    interval: 86400
+
+  direct-classical:
+    type: http
+    behavior: classical
+    url: "https://anaer.github.io/Sub/rules/direct-classical-provider.yaml"
+    path: ./rules/direct-classical-provider.yaml
+    interval: 86400
+  proxy-classical:
+    type: http
+    behavior: classical
+    url: "https://anaer.github.io/Sub/rules/proxy-classical-provider.yaml"
+    path: ./rules/proxy-classical-provider.yaml
+    interval: 86400
+  reject-classical:
+    type: http
+    behavior: classical
+    url: "https://anaer.github.io/Sub/rules/reject-classical-provider.yaml"
+    path: ./rules/reject-classical-provider.yaml
+    interval: 86400
+
+script:
+  code: |
+    def main(ctx, metadata):
+      # 规则列表定义(规则名:代理规则), 便于调整处理顺序
+      ruleList = {
+        "direct-classical":"DIRECT",
+        "proxy-classical":"DEBUG",
+        "reject-classical":"REJECT",
+        "advertising":"REJECT",
+        "reject":"REJECT",
+        "proxy":"PROXY",
+        "telegramcidr":"PROXY",
+        "applications":"DIRECT",
+        "private":"DIRECT",
+        "icloud":"DIRECT",
+        "apple":"DIRECT",
+        "google":"DIRECT",
+        "direct":"DIRECT",
+        "lancidr":"DIRECT",
+        "cncidr":"DIRECT"
+      }
+
+      # 解析host->ip赋值到metadata中 用于后续判断
+      ip = ctx.resolve_ip(metadata["host"])
+      if ip == "":
+        return "DIRECT"
+
+      metadata["dst_ip"] = ip
+
+      # 遍历规则策略, 有命中即返回
+      for rule,policy in ruleList.items():
+        if ctx.rule_providers[rule].match(metadata):
+          ctx.log("[match] {host} matched rule [{rule}] use {policy}".format(host=metadata["host"],rule=rule,policy=policy))
+          return policy
+
+      # 判断ip是否局域网以及中国, 是则直连
+      code = ctx.geoip(ip)
+      # ctx.log('[geoip] {host} {ip} {code}'.format(host=metadata["host"],ip=ip,code=code))
+      if code == "LAN" or code == "CN":
+        return "DIRECT"
+
+      # 漏网之鱼走代理
+      return "PROXY"
